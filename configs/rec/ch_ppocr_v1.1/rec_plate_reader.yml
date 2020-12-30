@@ -1,0 +1,13 @@
+TrainReader:
+  reader_function: ppocr.data.rec.dataset_traversal,SimpleReader
+  num_workers: 8
+  img_set_dir: /mnt/wen/PaddleOCR-develop/train_data/plate
+  label_file_path: /mnt/wen/PaddleOCR-develop/train_data/plate/rec_gt_train.txt
+  
+EvalReader:
+  reader_function: ppocr.data.rec.dataset_traversal,SimpleReader
+  img_set_dir: /mnt/wen/PaddleOCR-develop/train_data/plate
+  label_file_path: /mnt/wen/PaddleOCR-develop/train_data/plate/rec_gt_test.txt
+
+TestReader:
+  reader_function: ppocr.data.rec.dataset_traversal,SimpleReader
