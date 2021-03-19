@@ -13,18 +13,18 @@
 # limitations under the License.
 
 import argparse
-import os, sys
-from ppocr.utils.utility import initial_logger
-
-logger = initial_logger()
-from paddle.fluid.core import PaddleTensor
-from paddle.fluid.core import AnalysisConfig
-from paddle.fluid.core import create_paddle_predictor
+import os
+import sys
 import cv2
 import numpy as np
 import json
 from PIL import Image, ImageDraw, ImageFont
 import math
+import base64
+from paddle import inference
+
+project_dir = os.path.dirname(os.path.abspath(__file__))
+project_dir = os.path.abspath(os.path.join(project_dir, '../..'))
 
 
 def parse_args():
@@ -36,19 +36,23 @@ def parse_args():
     parser.add_argument("--use_gpu", type=str2bool, default=True)
     parser.add_argument("--ir_optim", type=str2bool, default=True)
     parser.add_argument("--use_tensorrt", type=str2bool, default=False)
-    parser.add_argument("--gpu_mem", type=int, default=8000)
+    parser.add_argument("--use_fp16", type=str2bool, default=False)
+    parser.add_argument("--gpu_mem", type=int, default=500)
 
     # params for text detector
     parser.add_argument("--image_dir", type=str)
     parser.add_argument("--det_algorithm", type=str, default='DB')
     parser.add_argument("--det_model_dir", type=str)
-    parser.add_argument("--det_max_side_len", type=float, default=960)
+    parser.add_argument("--det_limit_side_len", type=float, default=960)
+    parser.add_argument("--det_limit_type", type=str, default='max')
 
     # DB parmas
     parser.add_argument("--det_db_thresh", type=float, default=0.3)
-    parser.add_argument("--det_db_box_thresh", type=float, default=0.5)
-    parser.add_argument("--det_db_unclip_ratio", type=float, default=1.6)
-
+    parser.add_argument("--det_db_box_thresh", type=float, default=0.6)
+    parser.add_argument("--det_db_unclip_ratio", type=float, default=1.8)
+    parser.add_argument("--max_batch_size", type=int, default=10)
+    parser.add_argument("--use_dilation", type=bool, default=False)
+    
     # EAST parmas
     parser.add_argument("--det_east_score_thresh", type=float, default=0.8)
     parser.add_argument("--det_east_cover_thresh", type=float, default=0.1)
@@ -69,28 +73,27 @@ def parse_args():
     parser.add_argument(
         "--rec_char_dict_path",
         type=str,
-        default="./ppocr/utils/ppocr_keys_v1.txt")
+        default=os.path.join(project_dir, "./ppocr/utils/dicts/ppocr_keys_v1.txt"))
     parser.add_argument("--use_space_char", type=str2bool, default=True)
     parser.add_argument(
-        "--vis_font_path", type=str, default="./doc/simfang.ttf")
+        "--vis_font_path", type=str, default=os.path.join(project_dir, "./ppocr/utils/fonts/simfang.ttf"))
+    parser.add_argument("--drop_score", type=float, default=0.5)
 
     # params for text classifier
     parser.add_argument("--use_angle_cls", type=str2bool, default=False)
     parser.add_argument("--cls_model_dir", type=str)
     parser.add_argument("--cls_image_shape", type=str, default="3, 48, 192")
     parser.add_argument("--label_list", type=list, default=['0', '180'])
-    parser.add_argument("--cls_batch_num", type=int, default=30)
+    parser.add_argument("--cls_batch_num", type=int, default=6)
     parser.add_argument("--cls_thresh", type=float, default=0.9)
 
     parser.add_argument("--enable_mkldnn", type=str2bool, default=False)
-    parser.add_argument("--use_zero_copy_run", type=str2bool, default=False)
-    
     parser.add_argument("--use_pdserving", type=str2bool, default=False)
-    
+
     return parser.parse_args()
 
 
-def create_predictor(args, mode):
+def create_predictor(args, mode, logger):
     if mode == "det":
         model_dir = args.det_model_dir
     elif mode == 'cls':
@@ -101,8 +104,8 @@ def create_predictor(args, mode):
     if model_dir is None:
         logger.info("not find {} model file path {}".format(mode, model_dir))
         sys.exit(0)
-    model_file_path = model_dir + "/model"
-    params_file_path = model_dir + "/params"
+    model_file_path = model_dir + "/inference.pdmodel"
+    params_file_path = model_dir + "/inference.pdiparams"
     if not os.path.exists(model_file_path):
         logger.info("not find model file path {}".format(model_file_path))
         sys.exit(0)
@@ -110,10 +113,15 @@ def create_predictor(args, mode):
         logger.info("not find params file path {}".format(params_file_path))
         sys.exit(0)
 
-    config = AnalysisConfig(model_file_path, params_file_path)
+    config = inference.Config(model_file_path, params_file_path)
 
     if args.use_gpu:
         config.enable_use_gpu(args.gpu_mem, 0)
+        if args.use_tensorrt:
+            config.enable_tensorrt_engine(
+                precision_mode=inference.PrecisionType.Half
+                if args.use_fp16 else inference.PrecisionType.Float32,
+                max_batch_size=args.max_batch_size)
     else:
         config.disable_gpu()
         config.set_cpu_math_library_num_threads(6)
@@ -121,34 +129,58 @@ def create_predictor(args, mode):
             # cache 10 different shapes for mkldnn to avoid memory leak
             config.set_mkldnn_cache_capacity(10)
             config.enable_mkldnn()
+            #  TODO LDOUBLEV: fix mkldnn bug when bach_size  > 1
+            #config.set_mkldnn_op({'conv2d', 'depthwise_conv2d', 'pool2d', 'batch_norm'})
+            args.rec_batch_num = 1
 
-    # config.enable_memory_optim()
+    config.enable_memory_optim()
     config.disable_glog_info()
 
-    if args.use_zero_copy_run:
-        config.delete_pass("conv_transpose_eltwiseadd_bn_fuse_pass")
-        config.switch_use_feed_fetch_ops(False)
-    else:
-        config.switch_use_feed_fetch_ops(True)
+    config.delete_pass("conv_transpose_eltwiseadd_bn_fuse_pass")
+    config.switch_use_feed_fetch_ops(False)
 
-    predictor = create_paddle_predictor(config)
+    # create predictor
+    predictor = inference.create_predictor(config)
     input_names = predictor.get_input_names()
     for name in input_names:
-        input_tensor = predictor.get_input_tensor(name)
+        input_tensor = predictor.get_input_handle(name)
     output_names = predictor.get_output_names()
     output_tensors = []
     for output_name in output_names:
-        output_tensor = predictor.get_output_tensor(output_name)
+        output_tensor = predictor.get_output_handle(output_name)
         output_tensors.append(output_tensor)
     return predictor, input_tensor, output_tensors
 
 
 def draw_text_det_res(dt_boxes, img_path):
-    src_im = cv2.imread(img_path)
+    if isinstance(img_path, str):
+        src_im = cv2.imread(img_path)
+    elif isinstance(img_path, np.ndarray):
+        src_im = img_path
     for box in dt_boxes:
         box = np.array(box).astype(np.int32).reshape(-1, 2)
-        cv2.polylines(src_im, [box], True, color=(255, 255, 0), thickness=2)
+        cv2.polylines(src_im, [box], True, color=(0, 125, 255), thickness=2)
     return src_im
+
+
+def draw_text_res(result, image_file):
+    if isinstance(image_file, str):
+        image = Image.open(image_file).convert('RGB')
+    elif isinstance(image_file, np.ndarray):
+        image = Image.fromarray(image_file).convert('RGB')
+
+    if not result:
+        draw_img = np.ones(shape=[image.height, image.width, 3], dtype=np.int8) * 255
+    else:
+        txts = [result[0][0]]
+        scores = [result[0][1]]
+        draw_img = text_visual(txts,
+                               scores,
+                               img_h=image.height,
+                               img_w=image.width)
+    draw_img = np.concatenate([np.array(image), np.array(draw_img)], axis=1)
+    draw_img = draw_img[:, :, ::-1]
+    return draw_img
 
 
 def resize_img(img, input_size=600):
@@ -159,8 +191,8 @@ def resize_img(img, input_size=600):
     im_shape = img.shape
     im_size_max = np.max(im_shape[0:2])
     im_scale = float(input_size) / float(im_size_max)
-    im = cv2.resize(img, None, None, fx=im_scale, fy=im_scale)
-    return im
+    img = cv2.resize(img, None, None, fx=im_scale, fy=im_scale)
+    return img
 
 
 def draw_ocr(image,
@@ -168,7 +200,7 @@ def draw_ocr(image,
              txts=None,
              scores=None,
              drop_score=0.5,
-             font_path="./doc/simfang.ttf"):
+             font_path=os.path.join(project_dir, "./ppocr/utils/fonts/simfang.ttf")):
     """
     Visualize the results of OCR detection and recognition
     args:
@@ -209,7 +241,7 @@ def draw_ocr_box_txt(image,
                      txts,
                      scores=None,
                      drop_score=0.5,
-                     font_path="./doc/simfang.ttf"):
+                     font_path=os.path.join(project_dir, "./ppocr/utils/fonts/simfang.ttf")):
     h, w = image.height, image.width
     img_left = image.copy()
     img_right = Image.new('RGB', (w, h), (255, 255, 255))
@@ -261,7 +293,6 @@ def str_count(s):
     Count the number of Chinese characters,
     a single English character and a single number
     equal to half the length of Chinese characters.
-
     args:
         s(string): the input of string
     return(int):
@@ -286,7 +317,7 @@ def text_visual(texts,
                 img_h=400,
                 img_w=600,
                 threshold=0.,
-                font_path="./doc/simfang.ttf"):
+                font_path=os.path.join(project_dir, "./ppocr/utils/fonts/simfang.ttf")):
     """
     create new blank img and draw txt on it
     args:
@@ -296,7 +327,6 @@ def text_visual(texts,
         img_w(int): the width of blank img
         font_path: the path of font which is used to draw text
     return(array):
-
     """
     if scores is not None:
         assert len(texts) == len(
@@ -311,11 +341,11 @@ def text_visual(texts,
 
     blank_img, draw_txt = create_blank_img()
 
-    font_size = 20
+    font_size = 18
     txt_color = (0, 0, 0)
     font = ImageFont.truetype(font_path, font_size, encoding="utf-8")
 
-    gap = font_size + 5
+    gap = font_size - 5
     txt_img_list = []
     count, index = 1, 0
     for idx, txt in enumerate(texts):
@@ -358,11 +388,20 @@ def text_visual(texts,
     return np.array(blank_img)
 
 
+def cv2_to_base64(image, ext='.png'):
+    _, buf = cv2.imencode(ext, image)
+    return base64.b64encode(buf)
+
+
 def base64_to_cv2(b64str):
-    import base64
-    data = base64.b64decode(b64str.encode('utf8'))
+    if str(b64str)[:10] == 'data:image':
+        b64str = str(b64str).split(';base64,')[-1]
+    data = base64.b64decode(b64str)
     data = np.fromstring(data, np.uint8)
-    data = cv2.imdecode(data, cv2.IMREAD_COLOR)
+    data = cv2.imdecode(data, cv2.IMREAD_UNCHANGED)
+    if data.shape[-1] > 3:
+        # remove redundant dimensions
+        data = np.delete(data, 3, 2)
     return data
 
 
@@ -375,6 +414,7 @@ def draw_boxes(image, boxes, scores=None, drop_score=0.5):
         box = np.reshape(np.array(box), [-1, 1, 2]).astype(np.int64)
         image = cv2.polylines(np.array(image), [box], True, (255, 0, 0), 2)
     return image
+
 
 
 if __name__ == '__main__':

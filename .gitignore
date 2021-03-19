@@ -17,11 +17,16 @@ output/
 *~
 *.vscode
 *.idea
+*zip
 
 *.log
 .clang-format
 .clang_format.hook
 
+venv/
 build/
 dist/
 paddleocr.egg-info/
+weights/cls
+weights/det
+weights/rec

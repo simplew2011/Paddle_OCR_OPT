@@ -1,154 +1,228 @@
-English | [简体中文](README_ch.md)
 
-## Introduction
-PaddleOCR aims to create rich, leading, and practical OCR tools that help users train better models and apply them into practice.
+**Paddle_OCR_OPT**是基于PaddleOCR通用文字识别工具箱的二次封装，
+旨在减少参数配置和提升代码完整性，实现快速实现上产模型的训练开发。
 
-**Recent updates**
-- 2020.9.22 Update the PP-OCR technical article, https://arxiv.org/abs/2009.09941
-- 2020.9.19 Update the ultra lightweight compressed ppocr_mobile_slim series models, the overall model size is 3.5M (see [PP-OCR Pipline](#PP-OCR-Pipline)), suitable for mobile deployment. [Model Downloads](#Supported-Chinese-model-list)
-- 2020.9.17 Update the ultra lightweight ppocr_mobile series and general ppocr_server series Chinese and English ocr models, which are comparable to commercial effects. [Model Downloads](#Supported-Chinese-model-list)
-- 2020.9.17 update [English recognition model](./doc/doc_en/models_list_en.md#english-recognition-model) and [Multilingual recognition model](doc/doc_en/models_list_en.md#english-recognition-model), `German`, `French`, `Japanese` and `Korean` have been supported. Models for more languages will continue to be updated.
-- 2020.8.24 Support the use of PaddleOCR through whl package installation，pelease refer  [PaddleOCR Package](./doc/doc_en/whl_en.md)
-- 2020.8.21 Update the replay and PPT of the live lesson at Bilibili on August 18, lesson 2, easy to learn and use OCR tool spree. [Get Address](https://aistudio.baidu.com/aistudio/education/group/info/1519)
-- [more](./doc/doc_en/update_en.md)
-
-## Features
-- PPOCR series of high-quality pre-trained models, comparable to commercial effects
-    - Ultra lightweight ppocr_mobile series models: detection (2.6M) + direction classifier (0.9M) + recognition (4.6M) = 8.1M
-    - General ppocr_server series models: detection (47.2M) + direction classifier (0.9M) + recognition (107M) = 155.1M
-    - Ultra lightweight compression ppocr_mobile_slim series models: detection (1.4M) + direction classifier (0.5M) + recognition (1.6M) = 3.5M
-- Support Chinese, English, and digit recognition, vertical text recognition, and long text recognition
-- Support multi-language recognition: Korean, Japanese, German, French
-- Support user-defined training, provides rich predictive inference deployment solutions
-- Support PIP installation, easy to use
-- Support Linux, Windows, MacOS and other systems
-
-## Visualization
-
-<div align="center">
-    <img src="doc/imgs_results/1101.jpg" width="800">
-    <img src="doc/imgs_results/1103.jpg" width="800">
-</div>
-
-The above pictures are the visualizations of the general ppocr_server model. For more effect pictures, please see [More visualizations](./doc/doc_en/visualization_en.md).
-
-<a name="Community"></a>
-## Community
-- Scan the QR code below with your Wechat, you can access to official technical exchange group. Look forward to your participation.
-
-<div align="center">
-<img src="./doc/joinus.PNG"  width = "200" height = "200" />
-</div>
-
-
-## Quick Experience
-
-You can also quickly experience the ultra-lightweight OCR : [Online Experience](https://www.paddlepaddle.org.cn/hub/scene/ocr)
-
-Mobile DEMO experience (based on EasyEdge and Paddle-Lite, supports iOS and Android systems): [Sign in to the website to obtain the QR code for  installing the App](https://ai.baidu.com/easyedge/app/openSource?from=paddlelite)
-
- Also, you can scan the QR code below to install the App (**Android support only**)
-
-<div align="center">
-<img src="./doc/ocr-android-easyedge.png"  width = "200" height = "200" />
-</div>
-
-- [**OCR Quick Start**](./doc/doc_en/quickstart_en.md)
-
-<a name="Supported-Chinese-model-list"></a>
-
-## PP-OCR 1.1 series model list（Update on Sep 17）
-
-| Model introduction                                           | Model name                   | Recommended scene | Detection model                                              | Direction classifier                                         | Recognition model                                            |
-| ------------------------------------------------------------ | ---------------------------- | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Chinese and English ultra-lightweight OCR model (8.1M)       | ch_ppocr_mobile_v1.1_xx      | Mobile & server   | [inference model](https://paddleocr.bj.bcebos.com/20-09-22/mobile/det/ch_ppocr_mobile_v1.1_det_infer.tar) / [pre-trained model](https://paddleocr.bj.bcebos.com/20-09-22/mobile/det/ch_ppocr_mobile_v1.1_det_train.tar) | [inference model](https://paddleocr.bj.bcebos.com/20-09-22/cls/ch_ppocr_mobile_v1.1_cls_infer.tar) / [pre-trained model](https://paddleocr.bj.bcebos.com/20-09-22/cls/ch_ppocr_mobile_v1.1_cls_train.tar) | [inference model](https://paddleocr.bj.bcebos.com/20-09-22/mobile/rec/ch_ppocr_mobile_v1.1_rec_infer.tar) / [pre-trained model](https://paddleocr.bj.bcebos.com/20-09-22/mobile/rec/ch_ppocr_mobile_v1.1_rec_pre.tar) |  
-| Chinese and English general OCR model (155.1M)               | ch_ppocr_server_v1.1_xx      | Server            | [inference model](https://paddleocr.bj.bcebos.com/20-09-22/server/det/ch_ppocr_server_v1.1_det_infer.tar) / [pre-trained model](https://paddleocr.bj.bcebos.com/20-09-22/server/det/ch_ppocr_server_v1.1_det_train.tar) | [inference model](https://paddleocr.bj.bcebos.com/20-09-22/cls/ch_ppocr_mobile_v1.1_cls_infer.tar) / [pre-trained model](https://paddleocr.bj.bcebos.com/20-09-22/cls/ch_ppocr_mobile_v1.1_cls_train.tar) | [inference model](https://paddleocr.bj.bcebos.com/20-09-22/server/rec/ch_ppocr_server_v1.1_rec_infer.tar) / [pre-trained model](https://paddleocr.bj.bcebos.com/20-09-22/server/rec/ch_ppocr_server_v1.1_rec_pre.tar) |  
-| Chinese and English ultra-lightweight compressed OCR model (3.5M) | ch_ppocr_mobile_slim_v1.1_xx | Mobile            | [inference model](https://paddleocr.bj.bcebos.com/20-09-22/mobile-slim/det/ch_ppocr_mobile_v1.1_det_prune_infer.tar) / [slim model](https://paddleocr.bj.bcebos.com/20-09-22/mobile/lite/ch_ppocr_mobile_v1.1_det_prune_opt.nb) | [inference model](https://paddleocr.bj.bcebos.com/20-09-22/cls/ch_ppocr_mobile_v1.1_cls_quant_infer.tar) / [slim model](https://paddleocr.bj.bcebos.com/20-09-22/mobile/lite/ch_ppocr_mobile_v1.1_cls_quant_opt.nb) |    [inference model](https://paddleocr.bj.bcebos.com/20-09-22/mobile-slim/rec/ch_ppocr_mobile_v1.1_rec_quant_infer.tar) / [slim model](https://paddleocr.bj.bcebos.com/20-09-22/mobile/lite/ch_ppocr_mobile_v1.1_rec_quant_opt.nb) |
-
-For more model downloads (including multiple languages), please refer to [PP-OCR v1.1 series model downloads](./doc/doc_en/models_list_en.md)
-
-
-## Tutorials
-- [Installation](./doc/doc_en/installation_en.md)
-- [Quick Start](./doc/doc_en/quickstart_en.md)
-- [Code Structure](./doc/doc_en/tree_en.md)
-- Algorithm introduction
-    - [Text Detection Algorithm](./doc/doc_en/algorithm_overview_en.md)
-    - [Text Recognition Algorithm](./doc/doc_en/algorithm_overview_en.md)
-    - [PP-OCR Pipline](#PP-OCR-Pipline)
-- Model training/evaluation
-    - [Text Detection](./doc/doc_en/detection_en.md)
-    - [Text Recognition](./doc/doc_en/recognition_en.md)
-    - [Direction Classification](./doc/doc_en/angle_class_en.md)
-    - [Yml Configuration](./doc/doc_en/config_en.md)
-- Inference and Deployment
-    - [Quick inference based on pip](./doc/doc_en/whl_en.md)
-    - [Python Inference](./doc/doc_en/inference_en.md)
-    - [C++ Inference](./deploy/cpp_infer/readme_en.md)
-    - [Serving](./deploy/hubserving/readme_en.md)
-    - [Mobile](./deploy/lite/readme_en.md)
-    - [Model Quantization](./deploy/slim/quantization/README_en.md)
-    - [Model Compression](./deploy/slim/prune/README_en.md)
-    - [Benchmark](./doc/doc_en/benchmark_en.md)
-- Datasets
-    - [General OCR Datasets(Chinese/English)](./doc/doc_en/datasets_en.md)
-    - [HandWritten_OCR_Datasets(Chinese)](./doc/doc_en/handwritten_datasets_en.md)
-    - [Various OCR Datasets(multilingual)](./doc/doc_en/vertical_and_multilingual_datasets_en.md)
-    - [Data Annotation Tools](./doc/doc_en/data_annotation_en.md)
-    - [Data Synthesis Tools](./doc/doc_en/data_synthesis_en.md)
-- [Visualization](#Visualization)
-- [FAQ](./doc/doc_en/FAQ_en.md)
-- [Community](#Community)
-- [References](./doc/doc_en/reference_en.md)
-- [License](#LICENSE)
-- [Contribution](#CONTRIBUTION)
-
-<a name="PP-OCR-Pipline"></a>
-
-## PP-OCR Pipline
-
-<div align="center">
-    <img src="./doc/ppocr_framework.png" width="800">
-</div>
-
-PP-OCR is a practical ultra-lightweight OCR system. It is mainly composed of three parts: DB text detection, detection frame correction and CRNN text recognition. The system adopts 19 effective strategies from 8 aspects including backbone network selection and adjustment, prediction head design, data augmentation, learning rate transformation strategy, regularization parameter selection, pre-training model use, and automatic model tailoring and quantization to optimize and slim down the models of each module. The final results are an ultra-lightweight Chinese and English OCR model with an overall size of 3.5M and a 2.8M English digital OCR model. For more details, please refer to the PP-OCR technical article (https://arxiv.org/abs/2009.09941). Besides, The implementation of the FPGM Pruner and PACT quantization is based on [PaddleSlim](https://github.com/PaddlePaddle/PaddleSlim).
+- [特性](#特性)
+- [效果展示](#效果展示)
+- [快速体验](#快速体验)
+  - [试用通用模型](#试用通用模型)
+  - [训练自用模型](#训练自用模型)
+  - [模型评估](#模型评估)
+  - [训练模型转为推理模型](#训练模型转为推理模型)
+  - [Flask服务](#Flask服务)
+  - [试用服务端通用模型](#试用服务端通用模型)
+- [许可证书](#许可证书)
 
 
 
-## Visualization [more](./doc/doc_en/visualization_en.md)
-- Chinese OCR model
-<div align="center">
-    <img src="./doc/imgs_results/1102.jpg" width="800">
-    <img src="./doc/imgs_results/1104.jpg" width="800">
-    <img src="./doc/imgs_results/1106.jpg" width="800">
-    <img src="./doc/imgs_results/1105.jpg" width="800">
-</div>
+## 特性
 
-- English OCR model
-<div align="center">
-    <img src="./doc/imgs_results/img_12.jpg" width="800">
-</div>
+- Paddle_OCR_OPT系列高质量预训练模型，准确的识别效果
+    - 通用server系列：检测（47.2M）+方向分类器（0.9M）+ 识别（107M）= 155.1M
+    - 超轻量压缩slim系列：检测（1.4M）+方向分类器（0.5M）+ 识别（1.6M）= 3.5M  
+- 支持中英文数字组合识别、竖排文本识别、长文本识别
+- 支持多语言识别：韩语、日语、德语、法语
+- 支持用户自定义训练，提供丰富的预测推理部署方案
+- 可运行于Linux、Windows、MacOS等多种系统
 
-- Multilingual OCR model
-<div align="center">
-    <img src="./doc/imgs_results/1110.jpg" width="800">
-    <img src="./doc/imgs_results/1112.jpg" width="800">
-</div>
+## 效果展示
+
+![img](doc/1.jpg)
 
 
+## Pipeline
 
-<a name="LICENSE"></a>
-## License
-This project is released under <a href="https://github.com/PaddlePaddle/PaddleOCR/blob/master/LICENSE">Apache 2.0 license</a>
+Paddle_OCR_OPT是一个实用的超轻量OCR系统。主要由DB文本检测、检测框矫正和CRNN文本识别三部分组成。
+该系统从骨干网络选择和调整、预测头部的设计、数据增强、学习率变换策略、正则化参数选择、预训练模型使用
+以及模型自动裁剪量化8个方面，采用19个有效策略，对各个模块的模型进行效果调优和瘦身，
+最终得到整体大小为3.5M的超轻量中英文OCR和2.8M的英文数字OCR。
 
-<a name="CONTRIBUTION"></a>
-## Contribution
-We welcome all the contributions to PaddleOCR and appreciate for your feedback very much.
+## 快速体验
 
-- Many thanks to [Khanh Tran](https://github.com/xxxpsyduck) and [Karl Horky](https://github.com/karlhorky) for contributing and revising the English documentation.
-- Many thanks to [zhangxin](https://github.com/ZhangXinNan) for contributing the new visualize function、add .gitgnore and discard set PYTHONPATH manually.
-- Many thanks to [lyl120117](https://github.com/lyl120117) for contributing the code for printing the network structure.
-- Thanks [xiangyubo](https://github.com/xiangyubo) for contributing the handwritten Chinese OCR datasets.
-- Thanks [authorfu](https://github.com/authorfu) for contributing Android demo  and [xiadeye](https://github.com/xiadeye) contributing iOS demo, respectively.
-- Thanks [BeyondYourself](https://github.com/BeyondYourself) for contributing many great suggestions and simplifying part of the code style.
-- Thanks [tangmq](https://gitee.com/tangmq) for contributing Dockerized deployment services to PaddleOCR and supporting the rapid release of callable Restful API services.
+- 安装依赖
+```shell
+pip install -r requirements.txt -i https://mirror.baidu.com/pypi/simple
+```
+
+- 代码结构
+
+
+```
+-- fastai_OCR
+    |-- ppocr              # 算法核心
+    |-- tools              # 工具文件
+    |-- weights            # 预训练模型，存放在Google Drive：https://drive.google.com/file/d/1YQFCKdcGbQW0RUvULKqMcid8YNbr0HK5/view?usp=sharing
+    |-- configs            # 配置文件
+    |-- docs               # 展示文件
+    |-- datasets           # 数据集文件   
+    |   |-- images         # 图片文件
+    |   |   |-- 00001.jpg
+    |   |   |-- ...
+    |   |-- anno_gt.txt    # 标注文本
+    |-- __init__.py        # 库标识
+    |-- LICENSE            # Apache 2.0 license
+    |-- requirments.txt    # 依赖库
+    |-- README.md          # 使用文档
+    |-- app.Dockerfile     # Flask服务DockerFile
+    |-- main_infer.py      # 模型推理范例
+    |-- main_train.py      # 模型训练范例
+    |-- main_eval.py       # 模型评估范例
+    |-- main_convert.py    # 模型转换范例
+    |-- main_app.py        # 模型服务范例
+```
+
+- 配置表
+
+<details>
+<summary>ocr_config.conf</summary>
+
+```
+[dl]
+# 任务场景, 字符检测识别[ocr]，必填项（无需修改）
+model_type = ocr
+
+[train]
+# model
+# 训练时权重保存路径，可写相对或绝对路径，训练时必填项(无需修改)，字符串
+weight_save_dir = ./output
+# 文字检测，继续训练的权重文件夹路径，训练时可选项（无时空置，有时以best_accuracy结尾），字符串，默认为空
+det_checkpoints_weight_dir =
+# 文字识别，继续训练的权重文件夹路径，训练时可选项（无时空置，有时以best_accuracy结尾），字符串，默认为空
+rec_checkpoints_weight_dir =
+
+# dataset
+# 数据集图片文件夹路径，必填项，字符串
+dataset_dir = D:/Plate_OCR/13/CCPD2019.tar/CCPD2019/ccpd_base
+# 数据集标注txt文本文件，包含检测和识别标注信息，必填项，字符串
+label_file_path = D:/Plate_OCR/13/CCPD2019.tar/CCPD2019/det_gt_test.txt
+
+# 文字识别 数据字典txt文本文件，即包含需检测识别文字集合，可选项（无时空置，用默认中文字典），字符串
+rec_char_dict_path = D:\Plate_OCR\13\CCPD2019.tar\CCPD2019\splits\plate_dict.txt
+# 文字识别 文字类别，中文ch，英文en，必填项，字符串，默认[ch]
+rec_char_type = ch
+
+# training
+# text detect 文字检测参数
+# 训练时迭代轮数，训练时必填项，整型数字，推荐[100][200][500]等，默认[100]，必填项
+det_epochs = 100
+# 训练数据的批大小，训练时必填项，整型数字，与图像大小及训练平台显存有关，图像较大或显存较小时，该值取较小值，推荐2的倍数，默认[2]，必填项
+det_batch_size = 16
+# 图像宽度，训练时必填项，整型数字，推荐32的倍数，[416][512][640]等，默认[640]，必填项
+det_input_width= 640
+# 图像高度，训练时必填项，整型数字，推荐32的倍数，[416][512][640]等，建议图像长宽一致，必填项
+det_input_height = 640
+
+
+# text recognize 文字识别参数
+# 训练时迭代轮数，训练时必填项，整型数字，推荐[100][200][500]等，默认[100]，必填项
+rec_epochs = 100
+# 训练数据的批大小，训练时必填项，整型数字，与图像大小及训练平台显存有关，图像较大或显存较小时，该值取较小值，推荐2的倍数，默认[2]，必填项
+rec_batch_size = 32
+# 文字区域图像宽度，小长条图像，训练时必填项，整型数字，推荐2的倍数，默认[320]，必填项
+rec_input_width= 320
+# 文字区域图像高度，小长条图像，训练时必填项，整型数字，推荐2的倍数，默认[32]，必填项
+rec_input_height = 32
+
+[test]
+# 测试图像文件夹路径，字符串，必填项
+test_image_dir = ./test
+# 测试结果图像文件夹路径，字符串，必填项
+test_result_dir = ./inference_results
+# 训练好的 文字检测 模型文件夹路径，字符串，可选项（无时空置，使用内置默认检测模型）
+det_model_dir = ./output/det/inference
+# 训练好的 文字识别 模型文件夹路径，字符串，可选项（无时空置，使用内置默认识别模型）
+rec_model_dir = ./output/rec/inference
+```
+
+</details>
+
+### 试用通用模型
+
+  设置[ocr_config.conf](configs/ocr_config.conf)配置表中[test]节点的`test_image_dir`测试图像路径，将`det_model_dir`和`rec_model_dir`设置为空，使用默认模型进行预测。
+
+```python main_infer.py
+python main_infer.py
+```
+
+### 训练自用模型
+
+1、准备标注数据文本文件，文件格式形如：
+
+```
+" 图像文件名        （中间用"\t"分隔）       json.dumps编码的图像标注信息"
+img_1.jpg    [{"transcription": "MASA", "points": [[31, 10], [41, 14], [41, 21], [31, 17]]}, {...}]
+```
+
+json.dumps编码前的图像标注信息是包含多个字典的list，字典中的 `points` 表示文本框的四个点的坐标(x, y)，从左上角的点开始顺时针排列。 `transcription` 表示当前文本框的文字，**当其内容为“###”时，表示该文本框无效，在训练时会跳过。**
+
+*※ 注意：此标注文本文件为包含两个训练阶段的数据集。有检测的文字区域位置数据，也包含了对应的字符标签。
+在文字识别训练时，会自动将对应坐标包围区域内截取局部图像（细长条），携带对应标签文字进行识别训练。*
+
+2、准备文字识别字典文本文件，并在[ocr_config.conf](configs/ocr_config.conf)配置表内设置rec_char_dict_path。
+
+```
+# plate_dict.txt
+皖
+沪
+津
+...
+```
+
+字典文件是一个包含训练集内需要识别的所有字符字典，一字一行，保存在txt文本中。
+
+3、设置[ocr_config.conf](configs/ocr_config.conf)配置文件相关参数。
+
+4、运行脚本，开始训练，模型保存在`outputs`路径下
+
+```
+python main_train.py
+```
+
+### 模型评估
+OCR检测相关的指标：Precision、Recall、Hmean。
+
+OCR识别相关的指标：acc、norm_edit_dis。
+
+代码中指定训练时生成的配置文件`config.yml`，和设置`checkpoints`指向模型保存的路径。
+
+```
+python main_eval.py
+```
+
+### 训练模型转为推理模型
+
+目前推理方式支持基于训练引擎推理和基于预测引擎推理。
+
+（1）基于训练引擎推理不需要转换模型，但是需要先组网再load参数，语言只支持python，不适合系统集成。
+
+（2）基于预测引擎的推理需要先转换模型为inference格式，然后可以进行不需要组网的推理，语言支持c++和python，适合系统集成。
+
+因此，建议先将训练模型转换为推理模型，修改[main_convert.py](main_train.py)，指定训练模型保存位置（精确到模型文件）`save_model_path`，然后运行:
+```
+python main_convert.py
+```
+
+### Flask服务
+
+提供了基于Flask的预测服务（CPU、GPU）。详见[main_app.py](main_app.py)
+
+基于python运行：
+```
+python main_app.py
+```
+基于docker运行：
+```shell
+docker build -t algorithm/paddle_ocr_opt:v1.0 -f app.Dockerfile .
+docker run --restart always --name paddle_ocr_opt -p 8000:8000 \
+-v /etc/localtime:/etc/localtime:ro -v /mnt/Paddle_OCR_OPT/weights:/app/paddle_ocr_opt/weights -d algorithm/paddle_ocr_opt:v1.0
+```
+
+### 试用服务端通用模型
+试用服务端通用模型，无需修改任务参数。指定`main_app_offline.py`中`image_dir`图片文件路径，基于python运行：
+```
+python main_app_offline.py
+```
+
+## 许可证书
+
+本项目的发布受[Apache 2.0 license](LICENSE)许可认证。
